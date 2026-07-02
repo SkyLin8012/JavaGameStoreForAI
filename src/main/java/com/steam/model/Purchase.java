@@ -13,8 +13,17 @@ public class Purchase {
     private String gameName;
     private String gameUrl;
     private String javaClassPath;
+    private String gamePrice;
 
-    public Purchase() {}
+    public String getGamePrice() {
+		return gamePrice;
+	}
+
+	public void setGamePrice(String gamePrice) {
+		this.gamePrice = gamePrice;
+	}
+
+	public Purchase() {}
 
     public Purchase(int memberId, int gameId) {
         this.memberId = memberId;

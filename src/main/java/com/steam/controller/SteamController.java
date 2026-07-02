@@ -139,50 +139,55 @@ public class SteamController {
         return purchaseService.isOwned(currentLoggedInMember.getId(), gameId);
     }
 
-    public List<Purchase> listAllPurchasesAdmin() throws SteamException {
-        return purchaseService.getAllPurchases();
-    }
-    
-    public boolean refundGame(int gameId)throws SteamException{
-    	if(currentLoggedInMember==null) throw new SteamException("請先登入!");
+    public boolean refundGame(int gameId) throws SteamException {
         if (currentLoggedInMember == null) throw new SteamException("請先登入！");
         int purchaseId = -1;
         try {
-        	//1. 查找該會員針對該遊戲的購買紀錄
-        	List<Purchase> purchases=
-        	purchaseService.getOwnedPurchases(currentLoggedInMember.getId());
-        	for(Purchase p:purchases)
-        	{
-        		if(p.getGameId()==gameId)
-        		{
-        			purchaseId= p.getId();
-        			break;
-        		}
-        	}
-        }catch(Exception e) {
-        	throw new SteamException("查無收藏庫紀錄",e);
+            List<Purchase> purchases = purchaseService.getOwnedPurchases(currentLoggedInMember.getId());
+            for (Purchase p : purchases) {
+                if (p.getGameId() == gameId) {
+                    purchaseId = p.getId();
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            throw new SteamException("無法查詢收藏庫記錄", e);
         }
-        if(purchaseId==-1)
-        {
-        	throw new SteamException("您尚未擁有此遊戲!");
+
+        if (purchaseId == -1) {
+            throw new SteamException("您尚未擁有此遊戲！");
         }
-        //2.執行資料庫刪除
-        boolean success= purchaseService.refundPurchase(purchaseId);
-        if(success) {
-        	//3.全額退款至玩家錢包
-        	try {
-        		Game game = gameService.getGameById(gameId);
-        		if(game !=null && game.getPrice().compareTo(BigDecimal.ZERO)>0) {
-        			deposit(game.getPrice()); //調用原有的錢包儲值機制
-        		}
-        	}catch(Exception ex)
-        	{
-        		//靜態忽略
-        	}
-        	//4.更新Controller 當前快取的會員狀態
-        	currentLoggedInMember=memberService.getMemberById(currentLoggedInMember.getId());
+
+        boolean success = purchaseService.refundPurchase(purchaseId);
+        if (success) {
+            try {
+                Game game = gameService.getGameById(gameId);
+                if (game != null && game.getPrice().compareTo(BigDecimal.ZERO) > 0) {
+                    deposit(game.getPrice());
+                }
+            } catch (Exception ex) {
+                // ignore refund error or balance sync
+            }
+            // Refresh local session model balance
+            currentLoggedInMember = memberService.getMemberById(currentLoggedInMember.getId());
         }
         return success;
+    }
+
+    public List<Purchase> listAllPurchasesAdmin() throws SteamException {
+        return purchaseService.getAllPurchases();
+    }
+
+    public boolean addPurchaseAdmin(int memberId, int gameId) throws SteamException {
+        return purchaseService.addPurchaseAdmin(memberId, gameId);
+    }
+
+    public boolean updatePurchaseAdmin(int id, int memberId, int gameId) throws SteamException {
+        return purchaseService.updatePurchaseAdmin(id, memberId, gameId);
+    }
+
+    public boolean deletePurchaseAdmin(int id) throws SteamException {
+        return purchaseService.refundPurchase(id);
     }
 
     // Cart Controls
@@ -305,7 +310,7 @@ public class SteamController {
             
             // 4. Admin
             if ("ADMIN".equals(currentLoggedInMember.getRole())) {
-                //unlockAchievement("ach-admin");
+                unlockAchievement("ach-admin");
             }
             
             // 5. Game specific score milestones

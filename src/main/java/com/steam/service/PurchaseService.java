@@ -11,4 +11,7 @@ public interface PurchaseService {
     boolean isOwned(int memberId, int gameId) throws SteamException;
     List<Purchase> getAllPurchases() throws SteamException;
     boolean refundPurchase(int purchaseId) throws SteamException;
+    boolean addPurchaseAdmin(int memberId, int gameId) throws SteamException;
+    boolean updatePurchaseAdmin(int id, int memberId, int gameId) throws SteamException;
+    Purchase getPurchaseById(int id) throws SteamException;
 }

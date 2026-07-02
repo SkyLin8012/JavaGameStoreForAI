@@ -77,12 +77,47 @@ public class PurchaseServiceImpl implements PurchaseService {
 
     @Override
     public boolean refundPurchase(int purchaseId) throws SteamException {
-        
         try {
-			return purchaseDao.delete(purchaseId);
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			throw new SteamException("移除遊戲失敗",e);
-		}
+            return purchaseDao.delete(purchaseId);
+        } catch (SQLException e) {
+            throw new SteamException("退款/移除收藏庫遊戲失敗", e);
+        }
+    }
+
+    @Override
+    public boolean addPurchaseAdmin(int memberId, int gameId) throws SteamException {
+        try {
+            if (purchaseDao.isOwned(memberId, gameId)) {
+                throw new SteamException("該會員已擁有此遊戲！");
+            }
+            Purchase p = new Purchase(memberId, gameId);
+            return purchaseDao.buy(p);
+        } catch (SQLException e) {
+            throw new SteamException("管理員新增訂單失敗: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public boolean updatePurchaseAdmin(int id, int memberId, int gameId) throws SteamException {
+        try {
+            Purchase p = purchaseDao.findById(id);
+            if (p == null) {
+                throw new SteamException("訂單不存在！");
+            }
+            p.setMemberId(memberId);
+            p.setGameId(gameId);
+            return purchaseDao.update(p);
+        } catch (SQLException e) {
+            throw new SteamException("管理員更新訂單失敗: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public Purchase getPurchaseById(int id) throws SteamException {
+        try {
+            return purchaseDao.findById(id);
+        } catch (SQLException e) {
+            throw new SteamException("取得訂單失敗: " + e.getMessage(), e);
+        }
     }
 }

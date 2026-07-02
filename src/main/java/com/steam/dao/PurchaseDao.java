@@ -10,4 +10,6 @@ public interface PurchaseDao {
     List<Purchase> findAll() throws SQLException;
     boolean delete(int id) throws SQLException;
     boolean isOwned(int memberId, int gameId) throws SQLException;
+    boolean update(Purchase purchase) throws SQLException;
+    Purchase findById(int id) throws SQLException;
 }

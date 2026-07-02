@@ -117,5 +117,51 @@ public class PurchaseDaoImpl implements PurchaseDao {
             DBUtil.close(conn, pstmt, rs);
         }
     }
-    
+
+    @Override
+    public boolean update(Purchase purchase) throws SQLException {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        try {
+            conn = DBUtil.getConnection();
+            String sql = "UPDATE purchase SET member_id = ?, game_id = ? WHERE id = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, purchase.getMemberId());
+            pstmt.setInt(2, purchase.getGameId());
+            pstmt.setInt(3, purchase.getId());
+            return pstmt.executeUpdate() > 0;
+        } finally {
+            DBUtil.close(conn, pstmt, null);
+        }
+    }
+
+    @Override
+    public Purchase findById(int id) throws SQLException {
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = DBUtil.getConnection();
+            String sql = "SELECT p.*, g.name AS game_name, m.nickname AS member_nickname FROM purchase p " +
+                         "JOIN game g ON p.game_id = g.id " +
+                         "JOIN member m ON p.member_id = m.id " +
+                         "WHERE p.id = ?";
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setInt(1, id);
+            rs = pstmt.executeQuery();
+            if (rs.next()) {
+                Purchase p = new Purchase();
+                p.setId(rs.getInt("id"));
+                p.setMemberId(rs.getInt("member_id"));
+                p.setGameId(rs.getInt("game_id"));
+                p.setPurchaseTime(rs.getTimestamp("purchase_time"));
+                p.setGameName(rs.getString("game_name"));
+                p.setMemberNickname(rs.getString("member_nickname"));
+                return p;
+            }
+        } finally {
+            DBUtil.close(conn, pstmt, rs);
+        }
+        return null;
+    }
 }

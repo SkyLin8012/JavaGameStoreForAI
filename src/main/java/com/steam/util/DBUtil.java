@@ -9,12 +9,10 @@ import java.sql.Statement;
 import java.util.Properties;
 
 public class DBUtil {
-	
 	/*
     private static Properties props = new Properties();
 
     static {
-    	
         try (InputStream in = DBUtil.class.getClassLoader().getResourceAsStream("database.properties")) {
             if (in != null) {
                 props.load(in);
@@ -29,7 +27,7 @@ public class DBUtil {
             e.printStackTrace();
         }
     }
-
+	
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(
             props.getProperty("db.url"),
@@ -37,8 +35,8 @@ public class DBUtil {
             props.getProperty("db.password")
         );
     }
-    */
-	public static Connection getConnection()
+	*/
+	public static Connection getConnection() throws SQLException
 	{
 		Connection conn=null;
 		String url="jdbc:mysql://localhost:3306/steam_db";

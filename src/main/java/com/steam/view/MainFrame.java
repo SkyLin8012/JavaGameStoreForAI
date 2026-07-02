@@ -52,6 +52,7 @@ public class MainFrame extends JFrame {
     private Runnable refreshAnalytics;
 
     // Shopping Cart fields
+    private DefaultTableModel myOrdersModel;
     private DefaultTableModel cartModel;
     private JLabel lblCartTotal;
     private JLabel lblCartBalance;
@@ -126,6 +127,8 @@ public class MainFrame extends JFrame {
                         updateProfileBalanceLabel();
                     } else if ("購物車".equals(title)) {
                         refreshCart();
+                    } else if ("我的訂單".equals(title)) {
+                        refreshMyOrders();
                     } else if ("管理控制 (Admin Only)".equals(title)) {
                         if (refreshAnalytics != null) {
                             refreshAnalytics.run();
@@ -141,6 +144,7 @@ public class MainFrame extends JFrame {
         createLibraryTab();
         createLeaderboardTab();
         createProfileTab();
+        createMyOrdersTab();
 
         // Admin Tab (Show only if Admin role)
         if (currentUser != null && "ADMIN".equals(currentUser.getRole())) {
@@ -817,88 +821,42 @@ public class MainFrame extends JFrame {
         lblTitle.setFont(new Font("Microsoft JhengHei", Font.BOLD, 18));
         lblTitle.setForeground(Color.WHITE);
         libraryPanel.add(lblTitle, BorderLayout.NORTH);
-        
-        lblTitle.setForeground(Color.WHITE);
-        libraryPanel.add(lblTitle,BorderLayout.NORTH);
-        
+
         libraryListModel = new DefaultListModel<>();
         libraryList = new JList<>(libraryListModel);
         libraryList.setFont(new Font("Microsoft JhengHei", Font.BOLD, 15));
         libraryList.setBackground(new Color(23, 26, 33));
         libraryList.setForeground(Color.WHITE);
-        
         libraryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         refreshLibrary();
 
         JScrollPane scrollPane = new JScrollPane(libraryList);
         libraryPanel.add(scrollPane, BorderLayout.CENTER);
-        //左右並排的按鈕面板
-        JPanel libraryActionPanel = new JPanel(new GridLayout(1,2,10,10));
+
+        JPanel libraryActionPanel = new JPanel(new GridLayout(1, 2, 10, 10));
         libraryActionPanel.setOpaque(false);
-        
+
         JButton btnPlay = new JButton("啟動遊戲 (RUN)");
         btnPlay.setFont(new Font("Microsoft JhengHei", Font.BOLD, 15));
         btnPlay.setBackground(new Color(102, 192, 244));
         btnPlay.setForeground(Color.BLACK);
         btnPlay.addActionListener(e -> launchSelectedGame());
         libraryActionPanel.add(btnPlay);
-        
-        JButton btnRemove= new JButton("移除並退款(Refund)");
-        btnRemove.setFont(new Font("Microsoft Jhenghei",Font.BOLD,15));
-        btnRemove.setBackground(new Color(231,76,60));//優雅的紅色
+
+        JButton btnRemove = new JButton("移除並退款 (Refund)");
+        btnRemove.setFont(new Font("Microsoft JhengHei", Font.BOLD, 15));
+        btnRemove.setBackground(new Color(231, 76, 60));
         btnRemove.setForeground(Color.WHITE);
-        btnRemove.addActionListener(e-> refundSelectedGame());
+        btnRemove.addActionListener(e -> refundSelectedGame());
         libraryActionPanel.add(btnRemove);
-        
-        libraryPanel.add(libraryActionPanel,BorderLayout.SOUTH);
+
+        libraryPanel.add(libraryActionPanel, BorderLayout.SOUTH);
+
         tabbedPane.addTab("我的收藏庫", libraryPanel);
     }
 
-    private void refundSelectedGame() {
-    	 String selected = libraryList.getSelectedValue();
-    	    if (selected == null || selected.trim().isEmpty() || selected.contains("未擁有任何遊戲") || selected.contains("失敗")) {
-    	        JOptionPane.showMessageDialog(this, "請先在收藏庫選擇一個要退款/移除的遊戲！");
-    	        return ;
-    	    }
-    	    int confirm = JOptionPane.showConfirmDialog(this, 
-    	            "您確定要申請退款並將此遊戲「" + selected + "」從您的收藏庫中移除嗎？\n移除後該遊戲若有定價，相應的金額將會退回您的帳戶錢包！", 
-    	            "確認退款並移除遊戲", 
-    	            JOptionPane.YES_NO_OPTION, 
-    	            JOptionPane.WARNING_MESSAGE);
-    	        
-    	        if (confirm == JOptionPane.YES_OPTION) {
-    	            try {
-    	                int gameId = -1;
-    	                List<com.steam.model.Purchase> purchases = SteamController.getInstance().getMyPurchases();
-    	                for (com.steam.model.Purchase p : purchases) {
-    	                    if (p.getGameName().equals(selected)) {
-    	                        gameId = p.getGameId();
-    	                        break;
-    	                    }
-    	                }
-    	                
-    	                if (gameId != -1) {
-    	                    if (SteamController.getInstance().refundGame(gameId)) {
-    	                        JOptionPane.showMessageDialog(this, "✅ 成功辦理退款並將「" + selected + "」自您的收藏庫移除！\n相應款項已退回您的錢包。", "操作成功", JOptionPane.INFORMATION_MESSAGE);
-    	                        refreshLibrary();              // 刷新收藏庫列表
-    	                        updateProfileBalanceLabel();   // 刷新個人帳戶顯示的餘額
-    	                        if (storeModel != null) {
-    	                            refreshStoreTable(storeModel); // 刷新商店表格狀態（從“已擁有”變回“購買”）
-    	                        }
-    	                    } else {
-    	                        JOptionPane.showMessageDialog(this, "❌ 無法移除此遊戲，請稍後再試。", "錯誤", JOptionPane.ERROR_MESSAGE);
-    	                    }
-    	                } else {
-    	                    JOptionPane.showMessageDialog(this, "❌ 找不到對應的遊戲資料。", "錯誤", JOptionPane.ERROR_MESSAGE);
-    	                }
-    	            } catch (SteamException e) {
-    	                JOptionPane.showMessageDialog(this, "退款失敗：" + e.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
-    	            }
-    	        }
-	}
-
-	private void refreshLibrary() {
+    private void refreshLibrary() {
         libraryListModel.clear();
         try {
             var purchases = SteamController.getInstance().getMyPurchases();
@@ -970,8 +928,7 @@ public class MainFrame extends JFrame {
                 // Not found, print log in dev console and fallback
                 System.out.println("Reflection class not found in classpath: " + javaClassPath + ". Fallbacking to JAR or embedded panel.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "❌ 透過 Java 反射機制載入此類別時出錯：" + ex.getMessage() + 
-                		"將轉由其他機制嘗試開啟。", "反射載入錯誤", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(this, "❌ 透過 Java 反射機制載入此類別時出錯：" + ex.getMessage() + "將轉由其他機制嘗試開啟。", "反射載入錯誤", JOptionPane.WARNING_MESSAGE);
             }
         }
 
@@ -995,11 +952,9 @@ public class MainFrame extends JFrame {
                     pb.directory(targetJar.getParentFile());
                     pb.start();
                     launchedExternally = true;
-                    JOptionPane.showMessageDialog(this, "🚀 正在啟動外部小遊戲 JAR 檔：" + 
-                    targetJar.getName() + "請在外部視窗中遊玩！", "啟動成功", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "🚀 正在啟動外部小遊戲 JAR 檔：" + targetJar.getName() + "請在外部視窗中遊玩！", "啟動成功", JOptionPane.INFORMATION_MESSAGE);
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "無法啟動外部小遊戲：" + ex.getMessage() + 
-                    "將使用內建模擬器啟動。", "提示", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(this, "無法啟動外部小遊戲：" + ex.getMessage() + "將使用內建模擬器啟動。", "提示", JOptionPane.WARNING_MESSAGE);
                 }
             }
         }
@@ -1029,9 +984,287 @@ public class MainFrame extends JFrame {
                 gameFrame.setVisible(true);
                 panel.requestFocusInWindow();
             } else {
-                JOptionPane.showMessageDialog(this, "無法載入此遊戲模組，且未找到對應的外部 JAR 檔案！預期路徑: "
-                + (relativePath != null ? relativePath : "無"), "啟動失敗", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "無法載入此遊戲模組，且未找到對應的外部 JAR 檔案！預期路徑: " + (relativePath != null ? relativePath : "無"), "啟動失敗", JOptionPane.ERROR_MESSAGE);
             }
+        }
+    }
+
+    private void refundSelectedGame() {
+        String selected = libraryList.getSelectedValue();
+        if (selected == null || selected.trim().isEmpty() || selected.contains("未擁有任何遊戲") || selected.contains("失敗")) {
+            JOptionPane.showMessageDialog(this, "請先在收藏庫選擇一個要退款/移除的遊戲！");
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "您確定要申請退款並將此遊戲「" + selected + "」從您的收藏庫中移除嗎？移除後若該遊戲有售價，相應的金額將會全額退回您的帳戶錢包！","確認退款並移除遊戲", JOptionPane.YES_NO_OPTION, 
+            JOptionPane.WARNING_MESSAGE);
+        
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                int gameId = -1;
+                List<com.steam.model.Purchase> purchases = SteamController.getInstance().getMyPurchases();
+                for (com.steam.model.Purchase p : purchases) {
+                    if (p.getGameName().equals(selected)) {
+                        gameId = p.getGameId();
+                        break;
+                    }
+                }
+                
+                if (gameId != -1) {
+                    if (SteamController.getInstance().refundGame(gameId)) {
+                        JOptionPane.showMessageDialog(this, "✅ 成功辦理退款並將「" + selected + "」自您的收藏庫移除！相應款項（若有）已退回您的錢包。", "操作成功", JOptionPane.INFORMATION_MESSAGE);
+                        refreshLibrary();
+                        updateProfileBalanceLabel();
+                        if (storeModel != null) {
+                            refreshStoreTable(storeModel);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "❌ 無法移除此遊戲，請稍後再試。", "錯誤", JOptionPane.ERROR_MESSAGE);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "❌ 找不到對應的遊戲資料。", "錯誤", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (SteamException e) {
+                JOptionPane.showMessageDialog(this, "退款失敗：" + e.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    private void createMyOrdersTab() {
+        JPanel ordersPanel = new JPanel(new BorderLayout(15, 15));
+        ordersPanel.setBackground(new Color(27, 40, 56));
+        ordersPanel.setBorder(new EmptyBorder(15, 15, 15, 15));
+
+        JPanel topPanel = new JPanel(new BorderLayout(5, 5));
+        topPanel.setOpaque(false);
+
+        JLabel lblTitle = new JLabel("我的訂單記錄與交易歷史 🧾");
+        lblTitle.setFont(new Font("Microsoft JhengHei", Font.BOLD, 18));
+        lblTitle.setForeground(Color.WHITE);
+        topPanel.add(lblTitle, BorderLayout.WEST);
+
+        // Search panel for order query
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 5, 0));
+        searchPanel.setOpaque(false);
+        JLabel lblSearch = new JLabel("查詢訂單: ");
+        lblSearch.setFont(new Font("Microsoft JhengHei", Font.BOLD, 12));
+        lblSearch.setForeground(Color.LIGHT_GRAY);
+        searchPanel.add(lblSearch);
+
+        JTextField txtSearch = new JTextField(15);
+        txtSearch.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 12));
+        searchPanel.add(txtSearch);
+
+        JButton btnSearch = new JButton("搜尋");
+        btnSearch.setBackground(new Color(102, 192, 244));
+        btnSearch.setForeground(Color.BLACK);
+        btnSearch.setFont(new Font("Microsoft JhengHei", Font.BOLD, 11));
+        searchPanel.add(btnSearch);
+
+        JButton btnReset = new JButton("重設");
+        btnReset.setBackground(new Color(103, 112, 123));
+        btnReset.setForeground(Color.WHITE);
+        btnReset.setFont(new Font("Microsoft JhengHei", Font.BOLD, 11));
+        searchPanel.add(btnReset);
+
+        topPanel.add(searchPanel, BorderLayout.EAST);
+        ordersPanel.add(topPanel, BorderLayout.NORTH);
+
+        String[] cols = {"交易單號", "購買遊戲", "交易日期與時間", "交易狀態"};
+        myOrdersModel = new DefaultTableModel(cols, 0) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+
+        JTable table = new JTable(myOrdersModel);
+        table.setBackground(new Color(23, 26, 33));
+        table.setForeground(Color.WHITE);
+        table.setGridColor(new Color(41, 54, 73));
+        table.setSelectionBackground(new Color(102, 192, 244));
+        table.setSelectionForeground(Color.BLACK);
+        table.setRowHeight(25);
+        table.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 13));
+        table.getTableHeader().setBackground(new Color(23, 26, 33));
+        table.getTableHeader().setForeground(new Color(103, 112, 123));
+        table.getTableHeader().setFont(new Font("Microsoft JhengHei", Font.BOLD, 13));
+
+        ordersPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 5));
+        btnPanel.setOpaque(false);
+
+        JButton btnReceipt = new JButton("檢視發票憑證 🧾");
+        btnReceipt.setBackground(new Color(46, 204, 113));
+        btnReceipt.setForeground(Color.WHITE);
+        btnReceipt.setFont(new Font("Microsoft JhengHei", Font.BOLD, 12));
+        btnPanel.add(btnReceipt);
+
+        JButton btnRefund = new JButton("辦理自助退款 💸");
+        btnRefund.setBackground(new Color(192, 57, 43));
+        btnRefund.setForeground(Color.WHITE);
+        btnRefund.setFont(new Font("Microsoft JhengHei", Font.BOLD, 12));
+        btnPanel.add(btnRefund);
+
+        JButton btnRefresh = new JButton("重新整理交易明細");
+        btnRefresh.setBackground(new Color(102, 192, 244));
+        btnRefresh.setForeground(Color.BLACK);
+        btnRefresh.setFont(new Font("Microsoft JhengHei", Font.BOLD, 12));
+        btnPanel.add(btnRefresh);
+
+        ordersPanel.add(btnPanel, BorderLayout.SOUTH);
+        tabbedPane.addTab("我的訂單", ordersPanel);
+
+        // Action listeners
+        btnSearch.addActionListener(e -> refreshMyOrders(txtSearch.getText()));
+        btnReset.addActionListener(e -> {
+            txtSearch.setText("");
+            refreshMyOrders();
+        });
+        
+        btnRefresh.addActionListener(e -> refreshMyOrders(txtSearch.getText()));
+
+        btnReceipt.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "請先選擇一筆訂單！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String txId = (String) myOrdersModel.getValueAt(selectedRow, 0);
+            int orderId = Integer.parseInt(txId.replace("ST-TX-", ""));
+            
+            try {
+                List<com.steam.model.Purchase> purchases = SteamController.getInstance().getMyPurchases();
+                com.steam.model.Purchase selectedP = null;
+                for (com.steam.model.Purchase p : purchases) {
+                    if (p.getId() == orderId) {
+                        selectedP = p;
+                        break;
+                    }
+                }
+                
+                if (selectedP != null) {
+                    Member user = SteamController.getInstance().getCurrentLoggedInMember();
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("========================================");
+
+                    sb.append("         Steam 電子交易憑證 (Invoice)      ");
+
+                    sb.append("========================================");
+                    sb.append("交易單號: ST-TX-").append(String.format("%06d", selectedP.getId())).append("");
+                    sb.append("買家暱稱: ").append(user.getNickname()).append(" (@").append(user.getUsername()).append(")");
+                    sb.append("電子信箱: ").append(user.getEmail()).append("");
+                    sb.append("購買項目: 《").append(selectedP.getGameName()).append("》");
+                    sb.append("交易時間: ").append(selectedP.getPurchaseTime() != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(selectedP.getPurchaseTime()) : "未知時間").append("");
+                    sb.append("付款狀態: ✅ 已完成交易");
+                    sb.append("實付金額: $").append(selectedP.getGamePrice() != null ? selectedP.getGamePrice().toString() : "0.00").append("");
+                    sb.append("----------------------------------------");
+                    sb.append("※ 系統安全提示：此電子交易發票由系統經 Java Swing ");
+                    sb.append("與 MySQL 安全加密存儲。退款將自動將金額退回至您的錢包。");
+                    sb.append("========================================");
+                    
+                    JTextArea textArea = new JTextArea(sb.toString());
+                    textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+                    textArea.setEditable(false);
+                    textArea.setBackground(new Color(23, 26, 33));
+                    textArea.setForeground(Color.GREEN);
+                    textArea.setCaretColor(Color.WHITE);
+                    textArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+                    
+                    JScrollPane scrollPane = new JScrollPane(textArea);
+                    scrollPane.setPreferredSize(new Dimension(420, 320));
+                    
+                    JOptionPane.showMessageDialog(this, scrollPane, "電子交易發票明細 🧾", JOptionPane.PLAIN_MESSAGE);
+                } else {
+                    JOptionPane.showMessageDialog(this, "找不到該筆訂單明細！", "錯誤", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "讀取憑證失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        btnRefund.addActionListener(e -> {
+            int selectedRow = table.getSelectedRow();
+            if (selectedRow == -1) {
+                JOptionPane.showMessageDialog(this, "請先選擇一筆要辦理退款的訂單紀錄！", "提示", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            String txId = (String) myOrdersModel.getValueAt(selectedRow, 0);
+            String gNameWithBracket = (String) myOrdersModel.getValueAt(selectedRow, 1);
+            String gameName = gNameWithBracket.replace("《", "").replace("》", "");
+            int orderId = Integer.parseInt(txId.replace("ST-TX-", ""));
+
+            int confirm = JOptionPane.showConfirmDialog(this, 
+                "您確定要辦理《" + gameName + "》的自助退款嗎？系統將自動收回此遊戲之收藏庫啟動權限，並全額退還相應款項至您的錢包帳戶中。", 
+                "確認辦理自助退款", 
+                JOptionPane.YES_NO_OPTION, 
+                JOptionPane.WARNING_MESSAGE);
+            
+            if (confirm == JOptionPane.YES_OPTION) {
+                try {
+                    int gameId = -1;
+                    List<com.steam.model.Purchase> purchases = SteamController.getInstance().getMyPurchases();
+                    for (com.steam.model.Purchase p : purchases) {
+                        if (p.getId() == orderId) {
+                            gameId = p.getGameId();
+                            break;
+                        }
+                    }
+                    
+                    if (gameId != -1) {
+                        if (SteamController.getInstance().refundGame(gameId)) {
+                            JOptionPane.showMessageDialog(this, "💸 自助退款成功！相應金額已退回您的錢包帳戶，遊戲擁有權已收回。", "退款成功", JOptionPane.INFORMATION_MESSAGE);
+                            refreshMyOrders(txtSearch.getText()); // Refresh orders table
+                            refreshLibrary();  // Refresh library JList
+                            updateProfileBalanceLabel(); // Refresh wallet label
+                            if (storeModel != null) {
+                                refreshStoreTable(storeModel); // Refresh store list/prices
+                            }
+                        } else {
+                            JOptionPane.showMessageDialog(this, "❌ 無法退款此訂單，請稍後再試。", "錯誤", JOptionPane.ERROR_MESSAGE);
+                        }
+                    } else {
+                        JOptionPane.showMessageDialog(this, "❌ 找不到對應的遊戲或此訂單已退款。", "錯誤", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "退款失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+    }
+
+    private void refreshMyOrders() {
+        refreshMyOrders("");
+    }
+
+    private void refreshMyOrders(String keyword) {
+        if (myOrdersModel == null) return;
+        myOrdersModel.setRowCount(0);
+        try {
+            List<com.steam.model.Purchase> purchases = SteamController.getInstance().getMyPurchases();
+            for (com.steam.model.Purchase p : purchases) {
+                String txId = "ST-TX-" + String.format("%06d", p.getId());
+                String pTime = p.getPurchaseTime() != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(p.getPurchaseTime()) : "未知時間";
+                String gameName = "《" + p.getGameName() + "》";
+                
+                if (keyword != null && !keyword.trim().isEmpty()) {
+                    String kw = keyword.toLowerCase().trim();
+                    boolean match = txId.toLowerCase().contains(kw) || p.getGameName().toLowerCase().contains(kw);
+                    if (!match) {
+                        continue;
+                    }
+                }
+                
+                myOrdersModel.addRow(new Object[]{
+                    txId,
+                    gameName,
+                    pTime,
+                    "✅ 交易完成"
+                });
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
         }
     }
 
@@ -1346,8 +1579,8 @@ public class MainFrame extends JFrame {
         JPanel memberTabPanel = new JPanel(new BorderLayout(10, 10));
         memberTabPanel.setBackground(new Color(33, 44, 57));
 
-        String[] memberCols = {"會員 ID", "帳號", "暱稱", "Email", "錢包餘額", "角色"};
-        DefaultTableModel memberModel = new DefaultTableModel(memberCols, 0) {
+        String[] memberCols1 = {"會員 ID", "帳號", "暱稱", "Email", "錢包餘額", "角色"};
+        DefaultTableModel memberModel = new DefaultTableModel(memberCols1, 0) {
             private static final long serialVersionUID = 1L;
             @Override
             public boolean isCellEditable(int r, int c) { return false; }
@@ -1538,7 +1771,12 @@ public class MainFrame extends JFrame {
                 int rv = fc.showOpenDialog(this);
                 if (rv == JFileChooser.APPROVE_OPTION) {
                     java.io.File sf = fc.getSelectedFile();
-                    String fileName = sf.getName();              
+                    String fileName = sf.getName();
+                    String check = "^[a-zA-Z0-9_-]+\\.[jJ][aA][rR]$";
+                    if (!fileName.matches(check)) {
+                        JOptionPane.showMessageDialog(this, "JAR 檔案名稱限制只能是英文、數字、減號或底線 (例如: tetris.jar)！", "格式錯誤", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     
                     try {
                         String currentBaseDir = System.getProperty("user.dir");
@@ -1709,7 +1947,10 @@ public class MainFrame extends JFrame {
                 if (rv == JFileChooser.APPROVE_OPTION) {
                     java.io.File sf = fc.getSelectedFile();
                     String fileName = sf.getName();
-                
+                    if (!fileName.matches("^[a-zA-Z0-9_-]+\\.[jJ][aA][rR]$")) {
+                        JOptionPane.showMessageDialog(this, "JAR 檔案名稱限制只能是英文、數字、減號或底線 (例如: tetris.jar)！", "格式錯誤", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
                     
                     try {
                         String currentBaseDir = System.getProperty("user.dir");
@@ -1832,6 +2073,245 @@ public class MainFrame extends JFrame {
         gameBtns.add(btnDeleteGame);
         gameTabPanel.add(gameBtns, BorderLayout.SOUTH);
         adminSubTabs.addTab("遊戲上下架管理 (CRUD)", gameTabPanel);
+
+        // SUB-TAB: Order Management (CRUD)
+        JPanel orderTabPanel = new JPanel(new BorderLayout(10, 10));
+        orderTabPanel.setBackground(new Color(33, 44, 57));
+
+        String[] orderCols = {"訂單 ID", "會員 ID", "會員暱稱", "遊戲 ID", "遊戲名稱", "購買時間"};
+        DefaultTableModel adminOrdersModel = new DefaultTableModel(orderCols, 0) {
+            private static final long serialVersionUID = 1L;
+            @Override
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        JTable orderTable = new JTable(adminOrdersModel);
+        orderTable.setRowHeight(25);
+        orderTable.setFont(new Font("Microsoft JhengHei", Font.PLAIN, 12));
+        orderTable.getTableHeader().setFont(new Font("Microsoft JhengHei", Font.BOLD, 12));
+        
+        // Define a refresh helper
+        Runnable refreshAdminOrdersTable = () -> {
+            adminOrdersModel.setRowCount(0);
+            try {
+                List<com.steam.model.Purchase> purchases = SteamController.getInstance().listAllPurchasesAdmin();
+                for (com.steam.model.Purchase p : purchases) {
+                    adminOrdersModel.addRow(new Object[]{
+                        p.getId(),
+                        p.getMemberId(),
+                        p.getMemberNickname() != null ? p.getMemberNickname() : ("ID: " + p.getMemberId()),
+                        p.getGameId(),
+                        p.getGameName(),
+                        p.getPurchaseTime() != null ? new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(p.getPurchaseTime()) : "未知"
+                    });
+                }
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+        };
+        
+        refreshAdminOrdersTable.run();
+        orderTabPanel.add(new JScrollPane(orderTable), BorderLayout.CENTER);
+
+        JPanel orderBtns = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+        orderBtns.setOpaque(false);
+
+        JButton btnAddOrder = new JButton("新增訂單");
+        btnAddOrder.setBackground(new Color(46, 204, 113));
+        btnAddOrder.setForeground(Color.WHITE);
+        btnAddOrder.addActionListener(e -> {
+            try {
+                List<Member> members = SteamController.getInstance().listAllMembers();
+                List<Game> games = SteamController.getInstance().listStoreGames();
+                
+                if (members.isEmpty() || games.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "系統內尚無會員或遊戲，無法手動派送/新增訂單。");
+                    return;
+                }
+                
+                JPanel addOrderPanel = new JPanel(new GridLayout(2, 2, 5, 5));
+                addOrderPanel.add(new JLabel("選擇會員:"));
+                JComboBox<String> memberCombo = new JComboBox<>();
+                for (Member m : members) {
+                    memberCombo.addItem(m.getId() + " - " + m.getNickname() + " (" + m.getUsername() + ")");
+                }
+                addOrderPanel.add(memberCombo);
+                
+                addOrderPanel.add(new JLabel("選擇遊戲:"));
+                JComboBox<String> gameCombo = new JComboBox<>();
+                for (Game g : games) {
+                    gameCombo.addItem(g.getId() + " - " + g.getName() + " ($" + g.getPrice() + ")");
+                }
+                addOrderPanel.add(gameCombo);
+                
+                int opt = JOptionPane.showConfirmDialog(this, addOrderPanel, "手動配發/新增遊戲訂單 (Create)", JOptionPane.OK_CANCEL_OPTION);
+                if (opt == JOptionPane.OK_OPTION) {
+                    String selectedM = (String) memberCombo.getSelectedItem();
+                    String selectedG = (String) gameCombo.getSelectedItem();
+                    int mId = Integer.parseInt(selectedM.split(" - ")[0]);
+                    int gId = Integer.parseInt(selectedG.split(" - ")[0]);
+                    
+                    if (SteamController.getInstance().addPurchaseAdmin(mId, gId)) {
+                        JOptionPane.showMessageDialog(this, "✅ 成功手動配發訂單！遊戲已加入該玩家收藏庫。");
+                        refreshAdminOrdersTable.run();
+                        refreshLibrary();
+                        if (refreshAnalytics != null) {
+                            refreshAnalytics.run();
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "新增訂單失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        orderBtns.add(btnAddOrder);
+
+        JButton btnEditOrder = new JButton("修改訂單");
+        btnEditOrder.setBackground(new Color(41, 128, 185));
+        btnEditOrder.setForeground(Color.WHITE);
+        btnEditOrder.addActionListener(e -> {
+            int row = orderTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "請選擇一個要修改的訂單！");
+                return;
+            }
+            int id = (int) adminOrdersModel.getValueAt(row, 0);
+            int currentMId = (int) adminOrdersModel.getValueAt(row, 1);
+            int currentGId = (int) adminOrdersModel.getValueAt(row, 3);
+            
+            try {
+                List<Member> members = SteamController.getInstance().listAllMembers();
+                List<Game> games = SteamController.getInstance().listStoreGames();
+                
+                JPanel editOrderPanel = new JPanel(new GridLayout(3, 2, 5, 5));
+                editOrderPanel.add(new JLabel("訂單 ID:"));
+                editOrderPanel.add(new JLabel(String.valueOf(id)));
+                
+                editOrderPanel.add(new JLabel("更換會員:"));
+                JComboBox<String> memberCombo = new JComboBox<>();
+                int selectMIdx = 0;
+                for (int i = 0; i < members.size(); i++) {
+                    Member m = members.get(i);
+                    memberCombo.addItem(m.getId() + " - " + m.getNickname());
+                    if (m.getId() == currentMId) {
+                        selectMIdx = i;
+                    }
+                }
+                memberCombo.setSelectedIndex(selectMIdx);
+                editOrderPanel.add(memberCombo);
+                
+                editOrderPanel.add(new JLabel("更換遊戲:"));
+                JComboBox<String> gameCombo = new JComboBox<>();
+                int selectGIdx = 0;
+                for (int i = 0; i < games.size(); i++) {
+                    Game g = games.get(i);
+                    gameCombo.addItem(g.getId() + " - " + g.getName());
+                    if (g.getId() == currentGId) {
+                        selectGIdx = i;
+                    }
+                }
+                gameCombo.setSelectedIndex(selectGIdx);
+                editOrderPanel.add(gameCombo);
+                
+                int opt = JOptionPane.showConfirmDialog(this, editOrderPanel, "修改訂單資料 (Update)", JOptionPane.OK_CANCEL_OPTION);
+                if (opt == JOptionPane.OK_OPTION) {
+                    String selectedM = (String) memberCombo.getSelectedItem();
+                    String selectedG = (String) gameCombo.getSelectedItem();
+                    int mId = Integer.parseInt(selectedM.split(" - ")[0]);
+                    int gId = Integer.parseInt(selectedG.split(" - ")[0]);
+                    
+                    if (SteamController.getInstance().updatePurchaseAdmin(id, mId, gId)) {
+                        JOptionPane.showMessageDialog(this, "✅ 訂單更新成功！");
+                        refreshAdminOrdersTable.run();
+                        refreshLibrary();
+                        if (refreshAnalytics != null) {
+                            refreshAnalytics.run();
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "修改訂單失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        orderBtns.add(btnEditOrder);
+
+        JButton btnDeleteOrder = new JButton("刪除/退款訂單");
+        btnDeleteOrder.setBackground(new Color(192, 57, 43));
+        btnDeleteOrder.setForeground(Color.WHITE);
+        btnDeleteOrder.addActionListener(e -> {
+            int row = orderTable.getSelectedRow();
+            if (row == -1) {
+                JOptionPane.showMessageDialog(this, "請選擇一個要操作的訂單！");
+                return;
+            }
+            int id = (int) adminOrdersModel.getValueAt(row, 0);
+            int mId = (int) adminOrdersModel.getValueAt(row, 1);
+            String mNick = (String) adminOrdersModel.getValueAt(row, 2);
+            int gId = (int) adminOrdersModel.getValueAt(row, 3);
+            String gName = (String) adminOrdersModel.getValueAt(row, 4);
+            
+            Object[] options = {"退款並銷帳 (Refund & Delete)", "僅銷帳/直接刪除 (Delete Only)", "取消"};
+            int opt = JOptionPane.showOptionDialog(this,
+                "⚠️ 您確定要處理會員「" + mNick + "」的《" + gName + "》訂單嗎？"
+										+"「退款並銷帳」將會："
+										+"1. 收回遊戲擁有權"
+										+"2. 全額退還該遊戲之原價至會員餘額。"
+										+"					"		
+										+"「僅銷帳/直接刪除」將會："
+										+"1. 收回遊戲擁有權"
+										+"2. 會員餘額保持不變。",
+                "訂單刪除與退款決策 (CRUD)",
+                JOptionPane.YES_NO_CANCEL_OPTION,
+                JOptionPane.WARNING_MESSAGE,
+                null, options, options[2]);
+                
+            if (opt == 0) { // Refund & Delete
+                try {
+                    Game game = SteamController.getInstance().listStoreGames().stream()
+                        .filter(g -> g.getId() == gId).findFirst().orElse(null);
+                    BigDecimal refundAmount = (game != null) ? game.getPrice() : BigDecimal.ZERO;
+                    
+                    if (SteamController.getInstance().deletePurchaseAdmin(id)) {
+                        List<Member> members = SteamController.getInstance().listAllMembers();
+                        Member targetM = members.stream().filter(m -> m.getId() == mId).findFirst().orElse(null);
+                        if (targetM != null && refundAmount.compareTo(BigDecimal.ZERO) > 0) {
+                            targetM.setBalance(targetM.getBalance().add(refundAmount));
+                            SteamController.getInstance().updateMemberByAdmin(targetM);
+                        }
+                        
+                        JOptionPane.showMessageDialog(this, "💸 已全額退還 $" + refundAmount + " 並銷帳，收回會員對該遊戲的啟動權限！");
+                        refreshAdminOrdersTable.run();
+                        refreshLibrary();
+                        updateProfileBalanceLabel();
+                        if (refreshAnalytics != null) {
+                            refreshAnalytics.run();
+                        }
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "退款與銷帳失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+                }
+            } else if (opt == 1) { // Delete Only
+                try {
+                    if (SteamController.getInstance().deletePurchaseAdmin(id)) {
+                        JOptionPane.showMessageDialog(this, "✅ 訂單已成功直接刪除，相關擁有權已收回。此操作不影響會員錢包餘額。");
+                        refreshAdminOrdersTable.run();
+                        refreshLibrary();
+                        if (refreshAnalytics != null) {
+                            refreshAnalytics.run();
+                        }
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(this, "直接刪除失敗：" + ex.getMessage(), "錯誤", JOptionPane.ERROR_MESSAGE);
+                }
+            }
+        });
+        orderBtns.add(btnDeleteOrder);
+
+        JButton btnRefreshOrder = new JButton("重新整理");
+        btnRefreshOrder.addActionListener(e -> refreshAdminOrdersTable.run());
+        orderBtns.add(btnRefreshOrder);
+
+        orderTabPanel.add(orderBtns, BorderLayout.SOUTH);
+        adminSubTabs.addTab("訂單歷史管理 (CRUD)", orderTabPanel);
 
         // SUB-TAB 3: Game Data Analysis (Data Analytics & Charts)
         JPanel analyticsTabPanel = new JPanel(new BorderLayout(15, 15));
