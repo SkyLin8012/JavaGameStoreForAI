@@ -301,7 +301,72 @@ public class TetrisGame extends JFrame {
 			g.setColor(new Color(15,15,20,220));
 			g.fillRect(infox, 0, 150, BOARD_HEIGHT* CELL_SIZE);
 			
+			// 在資訊欄內繪製文字:目前得分(score)
+			g.setColor(Color.WHITE);
+			g.setFont(new Font("Arial",Font.BOLD,16));
+			g.drawString("SCORE", infox + 20, 50);
+			g.setColor(Color.GREEN);//分數數值用綠色顯著突出
+			g.drawString(String.valueOf(score), infox + 20, 75);
 			
+			//繪製文字:累計消行數(LINES)
+			g.setColor(Color.WHITE);
+			g.drawString("LINES", infox + 20, 120);
+			g.setColor(Color.CYAN); //消行數用青藍色突出
+			g.drawString(String.valueOf(linesCleared), infox + 20, 145);
+			
+			//繪製下一顆方塊預覽圖
+			g.setColor(Color.WHITE);
+			g.drawString("NESXT", infox + 20, 210);
+			if(nextPiece !=null) {
+				//遍歷 nextPiece 小診列進行預覽所圖繪製
+				for(int r=0; r<nextPiece.length;r++) {
+					for(int c=0; c<nextPiece[r].length;c++) {
+						if(nextPiece[r][c]!=0) {
+							//計算預覽圖在右側面板的絕對繪製像素位置
+							int nextX = infox + 30 + c* 20; //每個預覽縮小至20像素寬
+							int nextY = 240 + r * 20;		//每個預覽縮小至20像素高
+							
+							g.setColor(COLORS[nextPieceType]); //著色為方塊原本色彩
+							g.fillRect(nextX, nextY, 18, 18);  //填滿
+							g.setColor(COLORS[nextPieceType].brighter()); //高亮框
+							g.drawRect(nextX, nextY, 18, 18);
+						}
+					}
+				}
+			}			
+		}
+		/* *
+		 * 3.繪製結算頁面(Game Over)
+		 * */
+		private void drawGameOver(Graphics2D g) {
+			//如果成功設定了遊戲結束背景圖，就畫出來
+			if(gameOverBackgroundImage !=null) {
+				g.drawImage(gameOverBackgroundImage, 0, 0, getWidth(), getHeight(), this);
+				
+				// 套用極深，極高濃度半透明遮罩(不透明度 200)營造凝重死局的感覺
+				g.setColor(new Color(0,0,0,200));
+				g.fillRect(0, 0, getWidth(), getHeight());
+			}else {
+				//備份機制:如果玩家沒放結束圖，預設塗滿接近全黑的半透明色
+				g.setColor(new Color(0,0,0,225));
+				g.fillRect(0, 0, getWidth(), getHeight());
+			}
+			
+			// 繪製巨大的紅色 GAME OVER 文字
+			g.setFont(new Font("Microsoft JhengHei", Font.BOLD,42));
+			g.setColor(Color.RED);
+			g.drawString("GAME OVER", getWidth()/2-120, 180);
+			
+			// 顯示此局最終戰績
+			g.setFont(new Font("Microsoft JhengHei", Font.PLAIN,20));
+			g.setColor(Color.WHITE);
+			g.drawString("最終得分: "+ score, getWidth()/2-60, 260);
+			g.drawString("消除行數: "+ linesCleared, getWidth()/2-60, 300);
+			
+			// 提示重新開始之功能鍵
+			g.setFont(new Font("Microsoft JhengHei", Font.PLAIN,16));
+			g.setColor(Color.YELLOW);
+			g.drawString("按下 SPACE 回到主選單", getWidth()/2-90, 400);
 		}
 		/* *
 		 * 輔助繪圖方法:專門用來繪製帶有 3D 光澤感的方塊格子
@@ -323,14 +388,6 @@ public class TetrisGame extends JFrame {
 			g.setColor(COLORS[type].darker());
 			g.drawRect(x + 2,y + 2,CELL_SIZE-5, CELL_SIZE-5);
 		}
-		private void drawGameOver(Graphics2D g2d) {
-			// TODO Auto-generated method stub
-			
-		}
-
-
-
-
 	}
 }
 
