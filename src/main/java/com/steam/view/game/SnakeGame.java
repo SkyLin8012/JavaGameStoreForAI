@@ -137,7 +137,7 @@ class SGamePanel extends JPanel implements ActionListener {
         switch (state) {
             case START: drawStartScreen(g); break;
             case RUNNING: drawGamePlay(g); break;
-            case GAME_OVER: drawGameOverScreen(g);insertLog(score); break;
+            case GAME_OVER: drawGameOverScreen(g); break;
 			default: break;
         }
     }
@@ -275,6 +275,7 @@ class SGamePanel extends JPanel implements ActionListener {
         state = GameState.GAME_OVER;
         timer.stop();
         stopBGM();
+        insertLog(score);
         repaint();
     }
 	//播放短音效（如吃東西）

@@ -212,6 +212,9 @@ class GamePanel extends JPanel implements ActionListener{
 		if(gameWon) { //若達成勝利條件
 			state = GameState.GAME_OVER; //將狀態轉為結束
 			stopBGM();//關閉背景音樂
+			//寫入分數到資料庫
+			//將分數載入紀錄
+			com.steam.controller.SteamController.getInstance().recordScore(3, score);
 			return; //結束整個方法
 		}
 		//遍歷整個盤面
@@ -228,13 +231,15 @@ class GamePanel extends JPanel implements ActionListener{
 		//若上面的return都沒有觸發，代表已無路可走，正式宣告GAME_OVER!
 		state=GameState.GAME_OVER;
 		stopBGM();//關閉背景音樂
+		//將分數載入紀錄
+		com.steam.controller.SteamController.getInstance().recordScore(3, score);
 	}
     //將記錄寫入資料庫
     private void insertLog(int source)
     {
     	//載入cookie
   		Member me=null;
-  		com.steam.controller.SteamController.getInstance().recordScore(6, score);
+  		com.steam.controller.SteamController.getInstance().recordScore(3, score);
   		//me=(Member) Tool.readFile("member.txt");
   		//Log log = new Log(1,me.getUid(),me.getName(),"1","經典貪食蛇",Integer.toString(source),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
   		//new LogServiceImpl().createLog(log);
@@ -255,7 +260,7 @@ class GamePanel extends JPanel implements ActionListener{
 		  //若目前是START狀態，就去執行畫封面的方法
 		  case RUNNING: drawBoard(g2d); break;
 		  //若目前是RUNNING狀態，就去繪製4*4主要盤面
-		  case GAME_OVER: drawGameOverScreen(g2d);insertLog(score); break;
+		  case GAME_OVER: drawGameOverScreen(g2d); break;
 		  //若目前是 GAME_OVER狀態，繪製最後計分板
 		  default:break;
 		}

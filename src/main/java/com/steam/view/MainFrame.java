@@ -926,10 +926,7 @@ public class MainFrame extends JFrame {
         String relativePath = selectedPurchase != null ? selectedPurchase.getGameUrl() : null;
         String javaClassPath = selectedPurchase != null ? selectedPurchase.getJavaClassPath() : null;
         if (relativePath == null || relativePath.trim().isEmpty()) {
-            if (selected.contains("俄羅斯方塊")) {
-                relativePath = "game/tetris.jar";
-                javaClassPath = "controller.TetrisGame";
-            } else if (selected.contains("小精靈")) {
+        	if (selected.contains("小精靈")) {
                 relativePath = "game/pacman.jar";
                 javaClassPath = "controller.PacmanGame";
             } else if (selected.contains("五子棋")) {
@@ -995,11 +992,10 @@ public class MainFrame extends JFrame {
             gameFrame.setSize(600, 650);
             gameFrame.setLocationRelativeTo(null);
             gameFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
+            
+            
             JPanel panel = null;
-            if (selected.contains("俄羅斯方塊")) {
-                panel = new TetrisPanel();
-            } else if (selected.contains("小精靈")) {
+            if (selected.contains("小精靈")) {
                 panel = new PacmanPanel();
             } else if (selected.contains("五子棋")) {
                 panel = new GobangPanel();

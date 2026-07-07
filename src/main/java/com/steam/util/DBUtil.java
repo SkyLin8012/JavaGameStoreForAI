@@ -41,7 +41,8 @@ public class DBUtil {
 		Connection conn=null;
 		String url="jdbc:mysql://localhost:3306/steam_db";
 		String user="root";
-		String password="1234";
+		//String password="1234";
+		String password="12345678";
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");
