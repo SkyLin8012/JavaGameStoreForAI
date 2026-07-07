@@ -142,14 +142,192 @@ public class TetrisGame extends JFrame {
 		setResizable(false);
 		
 		//建立可客製化繪圖面板 GamePanel(內部類別在程式下方)
+		GamePanel panel =new GamePanel();
+		//設定繪圖面板的大小:寬度為(地圖寬度10x30像素) + 右邊資訊欄的150像素；高度為 地圖高度20x30像素
+		panel.setPreferredSize(new Dimension(BOARD_WIDTH * CELL_SIZE + 150,BOARD_HEIGHT * CELL_SIZE));
+		//將繪圖面板加到JFrame 視窗容器中
+		add(panel);
+		//自動調整視窗大小，使其完美貼合內部繪圖面板的 PreferredSize
+		pack();
+		//設定視窗開啟時的初始位置，傳入 null 代表讓視窗在螢幕【正中間】顯示
+		setLocationRelativeTo(null);
 		
+		//為視窗註冊鍵盤監聽事件
+		addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				//將玩家按下的鍵盤按鍵代碼(keyCode) 送入 handleInput 方法處理
+				handleInput(e.getKeyCode());
+				//每次按完案鍵後，強迫更新畫面，否則畫面部會立即變動
+				panel.repaint();
+			}
+		});
 		
-		setBounds(100, 100, 450, 300);
-		contentPane = new JPanel();
-		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
-		setContentPane(contentPane);
-
+		// 初始化遊戲的核心計時器:每隔500毫秒(0.5秒)觸法一次Tick動作
+		gameTimer = new Timer(500,e->{
+			// 只有在【遊戲進行中(PLAYING)]狀態下，計時器才運作
+			if(state==GameState.PLAYING) {
+				// 試圖將目前的方塊向下移動一格(dy=1)
+				// 如果move1(0,1)回傳 false，代表方塊底下已經有障礙物或底邊.
+				if(!move1(0,1)) {
+					lockPiece(); //1.將目前的方塊【烙印/固定】在大地圖陣列 board 裡
+					checkLines();//2.檢查有沒有整行塞滿的情況，並禁行消除與加分
+					spawPiece(); //3.生成下一個新方塊到最上方
+				}
+				// 每次計時器震盪、方塊往下走一格後，都要重繪面板更新畫面
+				panel.repaint();
+			}			
+		});
+		
+		// 啟動音樂播放功能
+		playBGM();
 	}
+	private void playBGM() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void spawPiece() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void checkLines() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void lockPiece() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* *
+	 * 處理玩家的所有按鍵邏輯
+	 * @param keyCode 按下的按鈕虛擬代碼(例如:KeyEvent.VK_UP) 
+	 * */
+	private void handleInput(int keyCode) {
+		//情況 A:目前處於主選單
+		if(state == GameState.MENU) {
+			// 玩家按下空白鍵(SPACE) 或 Enter 鍵時，開始遊戲
+			if(keyCode == KeyEvent.VK_SPACE || keyCode== KeyEvent.VK_ENTER) {
+				startGame();
+			}
+		}
+		//情況B:目前正在遊玩中
+		else if (state == GameState.PLAYING) {
+			switch(keyCode) {
+				//按下方向鍵 ←:往左移動一格(dx=-1)
+				case KeyEvent.VK_LEFT -> move1(-1,0);
+				//按下方向鍵 →:往右移動一格(dx=1)
+				case KeyEvent.VK_RIGHT -> move1(1,0);
+				//按下方向鍵 ↓:加速往下掉落一格(dy=1)
+				case KeyEvent.VK_DOWN -> move1(0,1);
+				//按下方向鍵 ↑:進行方塊順時針旋轉
+				case KeyEvent.VK_UP->{
+					rotate(); //旋轉方塊
+					playSound("rotate.wav")	; //播放旋轉的音效				
+				}
+				// 按下空白鍵(SPACE):瞬間落到底部並固定(hard Drop)
+				case KeyEvent.VK_SPACE->hardDrop();
+			}
+		}
+		// 情況c:目前處於遊戲結束(結算)畫面
+		else if(state == GameState.GAME_OVER) {
+			//按下空白鍵或 Enter 鍵時，回到主選單
+			if(keyCode==KeyEvent.VK_SPACE || keyCode == KeyEvent.VK_ENTER) {
+				state = GameState.MENU;
+			}
+		}
+	}
+	
+	private void playSound(String string) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void rotate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	/* *
+	 * 點擊開始後，初始化新遊戲所的各項數據
+	 * */
+	private void startGame() {
+		// 重建一個全新、全空(值皆為0)的 20x10 地圖陣列
+		board = new int[BOARD_HEIGHT][BOARD_WIDTH];
+		score=0;   			//分數歸零
+		linesCleared =0; 	//消除行數歸零
+		state= GameState.PLAYING; //將遊戲狀態轉移至【進行中】
+		
+		Random rand = new Random(); //宣告亂數產生器
+		// 亂數抽取下一顆方塊的種類:rand.nextInt(7) 會產生 0 到 6,加 1後變為 1到7
+		nextPieceType = rand.nextInt(7) + 1;
+		// 根據抽取到的種類，從SHAPES 三維陣列中取出對應的二維圖案陣列
+		nextPiece = SHAPES[nextPieceType];
+		
+		// 呼叫產生方法，把一顆方塊產出來並就為
+		spawnPiece();
+		// 啟動 Swing 定時下落計時器
+		gameTimer.start();
+	}
+	
+	/* *
+	 * 生成新方塊並放置於頂部，同時隨機抽出【下一顆】方塊
+	 * */
+	private void spawnPiece() {
+		// 將預覽欄位方塊(nextPiece)複製給【目前操作中】的方塊(currentPiece)
+		currentPiece = nextPiece;
+		currentPieceType =nextPieceType;
+		
+		//再次隨機決定下一顆方塊類型(1至7)
+		Random rand = new Random();
+		nextPieceType = rand.nextInt(7) +1;
+		nextPiece = SHAPES[nextPieceType];
+		
+		//計算目前方塊在x軸的起始座標:目標是放在正中間
+		//(地圖寬度10/2) - (當前方塊寬度/2)
+		curX = BOARD_WIDTH/2 - currentPiece[0].length/2;
+		// Y 軸起始座標為0(最頂端)
+		curY = 0;
+		
+		//[死亡判定]:如果剛產生的方塊在起始點(curX,curY)就發生重疊/碰撞。
+		//代表玩家的地圖已經堆滿到頂點了，遊戲直接結束。
+		if(!isValidPosition(curX,curY, currentPiece)) {
+			state = GameState.GAME_OVER;  //狀態轉為結算
+			gameTimer.stop();			  //停止定時下墜計時器
+		}		
+	}
+	
+	private boolean isValidPosition(int curX2, int curY2, int[][] currentPiece2) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	/* *
+	 * 嘗試移動方塊
+	 * @param dx 水平位移量(-1 為左移一格、1為幼儀一格，0為不移動
+	 * @param dy 垂直位移量(1 為下移一格、0 為不移動)
+	 * @return 如果移動成功回傳 ture，若發生碰撞無法移動則回傳false
+	 * */
+	private boolean move1(int dx, int dy) {
+		//測試【如果】真的移動到了新座標(curX+dx, curY+dy).這個新位置是否合法(不碰撞)
+		if(isValidPosition(curX + dx, curY + dy, currentPiece)) {
+			curX += dx;
+			curY += dy;
+			return true;
+		}		
+		return false;
+	}
+	
+	/* *
+	 * 瞬間落到底部(hard Drop)
+	 * */
+	private void hardDrop() {
+		//
+	}
+	
 	/*============================
 	 * 主程式入口:示範圖片載入並啟動整個遊戲
 	 *============================
