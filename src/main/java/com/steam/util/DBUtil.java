@@ -9,40 +9,14 @@ import java.sql.Statement;
 import java.util.Properties;
 
 public class DBUtil {
-	/*
-    private static Properties props = new Properties();
-
-    static {
-        try (InputStream in = DBUtil.class.getClassLoader().getResourceAsStream("database.properties")) {
-            if (in != null) {
-                props.load(in);
-            } else {
-                // Fallback default
-                props.setProperty("db.url", "jdbc:mysql://localhost:3306/steam_db?useSSL=false&serverTimezone=UTC");
-                props.setProperty("db.username", "root");
-                props.setProperty("db.password", "123456");
-            }
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 	
-    public static Connection getConnection() throws SQLException {
-        return DriverManager.getConnection(
-            props.getProperty("db.url"),
-            props.getProperty("db.username"),
-            props.getProperty("db.password")
-        );
-    }
-	*/
 	public static Connection getConnection() throws SQLException
 	{
 		Connection conn=null;
 		String url="jdbc:mysql://localhost:3306/steam_db";
 		String user="root";
-		//String password="1234";
-		String password="12345678";
+		String password="1234";
+		//String password="12345678";
 		
 		try {
 			Class.forName("com.mysql.cj.jdbc.Driver");

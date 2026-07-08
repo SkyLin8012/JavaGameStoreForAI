@@ -230,7 +230,7 @@ public class TetrisPanel extends JFrame {
 		// 情況c:目前處於遊戲結束(結算)畫面
 		else if(state == GameState.GAME_OVER) {
 			//將分數載入紀錄
-			com.steam.controller.SteamController.getInstance().recordScore(1, score);
+			//com.steam.controller.SteamController.getInstance().recordScore(1, score);
 			//結束音樂
 			stopBGM();
 			//按下空白鍵或 Enter 鍵時，回到主選單
@@ -286,6 +286,10 @@ public class TetrisPanel extends JFrame {
 		//代表玩家的地圖已經堆滿到頂點了，遊戲直接結束。
 		if(!isValidPosition(curX,curY, currentPiece)) {
 			state = GameState.GAME_OVER;  //狀態轉為結算
+			//將分數載入紀錄
+			com.steam.controller.SteamController.getInstance().recordScore(1, score);
+			//結束音樂
+			stopBGM();
 			gameTimer.stop();			  //停止定時下墜計時器
 		}		
 	}
@@ -693,17 +697,7 @@ public class TetrisPanel extends JFrame {
 			g.setColor(Color.YELLOW);
 			g.drawString("按下 SPACE 回到主選單", getWidth()/2-90, 400);
 		}
-	    //將記錄寫入資料庫
-	    private void insertLog(int source)
-	    {
-	    	//載入cookie
-	  		Member me=null;
-	  		com.steam.controller.SteamController.getInstance().recordScore(6, score);
-	  		//me=(Member) Tool.readFile("member.txt");
-	  		//Log log = new Log(1,me.getUid(),me.getName(),"1","經典貪食蛇",Integer.toString(source),LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-	  		//new LogServiceImpl().createLog(log);
 
-	    }
 		/* *
 		 * 輔助繪圖方法:專門用來繪製帶有 3D 光澤感的方塊格子
 		 * @param g 畫筆元件

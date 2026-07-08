@@ -950,7 +950,7 @@ public class MainFrame extends JFrame {
                 form.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
                 form.setVisible(true);
                 launchedReflection = true;
-                JOptionPane.showMessageDialog(this, "🚀 成功透過 Java 反射機制 (Reflection) 載入並啟動類別：" + javaClassPath + "視窗資源已被配置為獨立釋放 (DISPOSE_ON_CLOSE)！", "反射啟動成功", JOptionPane.INFORMATION_MESSAGE);
+                //JOptionPane.showMessageDialog(this, "🚀 成功透過 Java 反射機制 (Reflection) 載入並啟動類別：" + javaClassPath + "視窗資源已被配置為獨立釋放 (DISPOSE_ON_CLOSE)！", "反射啟動成功", JOptionPane.INFORMATION_MESSAGE);
             } catch (ClassNotFoundException ex) {
                 // Not found, print log in dev console and fallback
                 System.out.println("Reflection class not found in classpath: " + javaClassPath + ". Fallbacking to JAR or embedded panel.");
