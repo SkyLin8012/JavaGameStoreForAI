@@ -4,7 +4,7 @@ USE `steam_db`;
 --
 -- Host: localhost    Database: steam_db
 -- ------------------------------------------------------
--- Server version	9.7.0
+-- Server version	8.0.46
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -16,14 +16,6 @@ USE `steam_db`;
 /*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
-SET @MYSQLDUMP_TEMP_LOG_BIN = @@SESSION.SQL_LOG_BIN;
-SET @@SESSION.SQL_LOG_BIN= 0;
-
---
--- GTID state at the beginning of the backup 
---
-
-SET @@GLOBAL.GTID_PURGED=/*!80000 '+'*/ '78852612-52bb-11f1-8d1a-a0ad9fbae808:1-314';
 
 --
 -- Table structure for table `achievement`
@@ -109,7 +101,7 @@ CREATE TABLE `game` (
 
 LOCK TABLES `game` WRITE;
 /*!40000 ALTER TABLE `game` DISABLE KEYS */;
-INSERT INTO `game` VALUES (1,'俄羅斯方塊 (Tetris)',50.00,'經典落體方塊遊戲，挑戰極速消除！','益智','img/tetris.png','from-cyan-700 to-blue-900','','com.steam.view.game.TetrisPanel'),(3,'經典2048 ',30.00,'遊戲的目標是在網格上讓相同的數值的方塊碰撞合併，最終取得數值為2048的方塊!','棋牌','img/G2048.png','from-amber-600 to-orange-800','','com.steam.view.game.Game2048'),(6,'貪吃蛇',100.00,'天吃蛇會一直吃蘋果，撞到牆或咬到自己會子動束。','益智','img/snake.png','from-slate-700 to-slate-900',NULL,'com.steam.view.game.SnakeGame');
+INSERT INTO `game` VALUES (1,'俄羅斯方塊 (Tetris)',50.00,'經典落體方塊遊戲，挑戰極速消除！','益智','img/Tetris.png','from-cyan-700 to-blue-900',NULL,'com.steam.view.game.TetrisPanel'),(3,'經典2048 ',30.00,'遊戲的目標是在網格上讓相同的數值的方塊碰撞合併，最終取得數值為2048的方塊!','棋牌','img/G2048.png','from-amber-600 to-orange-800','','com.steam.view.game.Game2048'),(6,'貪吃蛇',100.00,'天吃蛇會一直吃蘋果，撞到牆或咬到自己會子動束。','益智','img/snake.png','from-slate-700 to-slate-900',NULL,'com.steam.view.game.SnakeGame');
 /*!40000 ALTER TABLE `game` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -131,7 +123,7 @@ CREATE TABLE `game_score` (
   KEY `game_id` (`game_id`),
   CONSTRAINT `game_score_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
   CONSTRAINT `game_score_ibfk_2` FOREIGN KEY (`game_id`) REFERENCES `game` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=175 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=181 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -140,7 +132,7 @@ CREATE TABLE `game_score` (
 
 LOCK TABLES `game_score` WRITE;
 /*!40000 ALTER TABLE `game_score` DISABLE KEYS */;
-INSERT INTO `game_score` VALUES (172,1,1,0,'2026-07-07 22:48:00'),(173,1,6,10,'2026-07-07 22:48:46'),(174,1,3,544,'2026-07-07 22:53:44');
+INSERT INTO `game_score` VALUES (172,1,1,0,'2026-07-07 22:48:00'),(173,1,6,10,'2026-07-07 22:48:46'),(174,1,3,544,'2026-07-07 22:53:44'),(175,1,3,276,'2026-07-08 01:25:34'),(176,1,1,0,'2026-07-08 01:27:36'),(178,1,1,200,'2026-07-08 01:35:09'),(179,1,1,100,'2026-07-08 01:38:43'),(180,1,1,900,'2026-07-08 01:42:18');
 /*!40000 ALTER TABLE `game_score` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -171,7 +163,7 @@ CREATE TABLE `member` (
 
 LOCK TABLES `member` WRITE;
 /*!40000 ALTER TABLE `member` DISABLE KEYS */;
-INSERT INTO `member` VALUES (1,'admin','admin123','admin@steam.com','系統管理員',9799.00,'ADMIN','2026-07-01 06:43:16'),(2,'user1','user123','user1@gmail.com','玩家一號',500.00,'USER','2026-07-01 06:43:16'),(3,'user2','user123','user2@gmail.com','玩家二號',100.00,'USER','2026-07-01 06:43:16');
+INSERT INTO `member` VALUES (1,'admin','1234','admin@steam.com','系統管理員',9899.00,'ADMIN','2026-07-01 06:43:16'),(2,'user1','1234','user1@gmail.com','玩家一號',500.00,'USER','2026-07-01 06:43:16'),(3,'user2','1234','user2@gmail.com','玩家二號',100.00,'USER','2026-07-01 06:43:16');
 /*!40000 ALTER TABLE `member` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -205,7 +197,7 @@ CREATE TABLE `purchase` (
 
 LOCK TABLES `purchase` WRITE;
 /*!40000 ALTER TABLE `purchase` DISABLE KEYS */;
-INSERT INTO `purchase` VALUES (1,2,3,'2026-07-01 06:43:16',NULL,30.00),(3,1,3,'2026-07-01 07:12:18',NULL,0.00),(7,1,6,'2026-07-02 11:12:39',NULL,0.00),(10,1,1,'2026-07-07 21:18:20',NULL,0.00);
+INSERT INTO `purchase` VALUES (1,2,3,'2026-07-01 06:43:16',NULL,30.00),(3,1,3,'2026-07-01 07:12:18',NULL,0.00),(10,1,1,'2026-07-07 21:18:20',NULL,0.00);
 /*!40000 ALTER TABLE `purchase` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -253,7 +245,7 @@ CREATE TABLE `unlocked_achievement` (
   KEY `achievement_id` (`achievement_id`),
   CONSTRAINT `unlocked_achievement_ibfk_1` FOREIGN KEY (`member_id`) REFERENCES `member` (`id`) ON DELETE CASCADE,
   CONSTRAINT `unlocked_achievement_ibfk_2` FOREIGN KEY (`achievement_id`) REFERENCES `achievement` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1024 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1048 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -265,7 +257,6 @@ LOCK TABLES `unlocked_achievement` WRITE;
 INSERT INTO `unlocked_achievement` VALUES (1,1,'ach-millionaire','2026-07-01 06:55:32'),(2,1,'ach-first-buy','2026-07-01 06:55:32'),(14,1,'ach-gobang-win','2026-07-01 07:12:42'),(16,1,'ach-collector','2026-07-01 07:49:43'),(37,1,'ach-admin','2026-07-02 05:08:04'),(38,1,'ach-bird-15','2026-07-02 05:08:04'),(40,1,'ach-tetris-1000','2026-07-02 05:08:04'),(41,1,'ach-pacman-2000','2026-07-02 05:08:04'),(42,1,'ach-brick-150','2026-07-02 05:08:04');
 /*!40000 ALTER TABLE `unlocked_achievement` ENABLE KEYS */;
 UNLOCK TABLES;
-SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -276,4 +267,4 @@ SET @@SESSION.SQL_LOG_BIN = @MYSQLDUMP_TEMP_LOG_BIN;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-07-08  7:07:45
+-- Dump completed on 2026-07-08  9:43:24
