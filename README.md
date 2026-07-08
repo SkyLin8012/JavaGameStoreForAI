@@ -6,7 +6,7 @@
 ![AI-Assisted](https://img.shields.io/badge/Dev_Tool-AI_Studio-flash.svg)
 
 一個使用 Java 語言開發的虛擬 Steam 遊戲購買平台。本專案模擬了從前端使用者瀏覽、購買遊戲，到後端管理員進行上架與銷售數據分析的完整電商流程。
-
+本專案嚴格遵守 **MVC (Model-View-Controller)** 與 **DAO (Data Access Object)** 架構設計，並採用 **Maven** 進行依賴管理與建構。
 ---
 
 ## 核心功能
@@ -31,12 +31,44 @@
 *   **資料庫**：MySQL (負責儲存使用者、遊戲商品、訂單及排行榜數據)
 *   **輔助開發**：Google AI Studio (用於程式碼架構優化與邏輯輔助)
 
+## 📐 系統架構設計 (MVC + DAO Pattern)
+
+本專案採用分層架構，達到高內聚、低耦合的維護指標：
+
+```text
+com.steam
+├── controller       (Controller - 業務邏輯與流程控制中心)
+│   └── SteamController.java
+├── dao              (DAO - 資料庫直接對接與實體 CRUD 層)
+│   ├── MemberDAO.java
+│   ├── GameDAO.java
+│   ├── PurchaseDAO.java
+│   ├── AchievementDAO.java
+│   └── GameScoreDAO.java
+├── model            (Model - 封裝資料結構的 JavaBean/Entity)
+│   ├── Member.java
+│   ├── Game.java
+│   ├── Purchase.java
+│   ├── Achievement.java
+│   └── GameScore.java
+├── util             (Utilities - 工具類，如資料庫連線、安全加密)
+│   └── DBUtil.java
+├── exception        (Custom Exceptions - 自訂異常處理層)
+│   └── SteamException.java
+└── view             (View - Swing 介面視窗與底層遊戲渲染)
+    ├── LoginFrame.java
+    ├── RegisterFrame.java
+    ├── MainFrame.java         (核心主視窗 - 內含 WindowBuilder 頁籤群)
+    └── game/                  (各款內建模擬小遊戲元件面板)
+        ├── TetrisPanel.java
+        ├── PacmanPanel.java
+        ├── GobangPanel.java
+        ├── BrickBreakerPanel.java
+        └── FlappyBirdPanel.java
 ---
 
 ## 資料庫設定
 
 在執行專案前，請先在 MySQL 中建立資料庫並匯入相關資料表：
 
-1. 建立資料庫：
-   ```sql
-   CREATE DATABASE mock_steam DEFAULT CHARACTER SET utf8mb4;
+請在 MySQL 建立名為 steam_db 的資料庫，並執行以下 SQL 命令。本結構已包含防止外鍵約束失敗 (Cannot add or update a child row: a foreign key constraint fails) 的串聯刪除 (ON DELETE CASCADE) 機制。
