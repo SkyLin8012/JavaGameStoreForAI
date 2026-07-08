@@ -35,7 +35,7 @@
 
 本專案採用分層架構，達到高內聚、低耦合的維護指標：
 
-```text
+
 com.steam
 ├── controller       (Controller - 業務邏輯與流程控制中心)
 │   └── SteamController.java
