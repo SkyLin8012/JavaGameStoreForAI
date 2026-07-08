@@ -6,6 +6,7 @@
 ![AI-Assisted](https://img.shields.io/badge/Dev_Tool-AI_Studio-flash.svg)
 
 一個使用 Java 語言開發的虛擬 Steam 遊戲購買平台。本專案模擬了從前端使用者瀏覽、購買遊戲，到後端管理員進行上架與銷售數據分析的完整電商流程。
+
 本專案嚴格遵守 **MVC (Model-View-Controller)** 與 **DAO (Data Access Object)** 架構設計，並採用 **Maven** 進行依賴管理與建構。
 ---
 
