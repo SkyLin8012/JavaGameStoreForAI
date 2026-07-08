@@ -31,11 +31,18 @@
 *   **資料庫**：MySQL (負責儲存使用者、遊戲商品、訂單及排行榜數據)
 *   **輔助開發**：Google AI Studio (用於程式碼架構優化與邏輯輔助)
 
+## 資料庫設定
+
+在執行專案前，請先在 MySQL 中建立資料庫並匯入相關資料表：
+
+請在 MySQL 建立名為 steam_db 的資料庫，並執行以下 SQL 命令。本結構已包含防止外鍵約束失敗 (Cannot add or update a child row: a foreign key constraint fails) 的串聯刪除 (ON DELETE CASCADE) 機制。
+
+
 ## 📐 系統架構設計 (MVC + DAO Pattern)
 
 本專案採用分層架構，達到高內聚、低耦合的維護指標：
 
-
+```text
 com.steam
 ├── controller       (Controller - 業務邏輯與流程控制中心)
 │   └── SteamController.java
@@ -67,8 +74,3 @@ com.steam
         └── FlappyBirdPanel.java
 ---
 
-## 資料庫設定
-
-在執行專案前，請先在 MySQL 中建立資料庫並匯入相關資料表：
-
-請在 MySQL 建立名為 steam_db 的資料庫，並執行以下 SQL 命令。本結構已包含防止外鍵約束失敗 (Cannot add or update a child row: a foreign key constraint fails) 的串聯刪除 (ON DELETE CASCADE) 機制。
