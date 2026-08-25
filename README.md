@@ -6,7 +6,6 @@
 ![AI-Assisted](https://img.shields.io/badge/Dev_Tool-AI_Studio-flash.svg)
 
 這是一個基於 **Java SE 17**、**Swing (WindowBuilder)**、**JFreeChart** 與 **MySQL** 所開發的「Steam 整合式遊戲模擬平台」桌面應用程式。
-本專案嚴格遵守 **MVC (Model-View-Controller)** 與 **DAO (Data Access Object)** 架構設計，並採用 **Maven** 進行依賴管理與建構。
 ---
 
 ## 核心功能
