@@ -40,6 +40,7 @@
 ## 📐 系統架構設計 (MVC + DAO Pattern)
 
 本專案採用分層架構，達到高內聚、低耦合的維護指標：
+
 本專案嚴格遵守 **MVC (Model-View-Controller)** 與 **DAO (Data Access Object)** 架構設計，
 並採用 **Maven** 進行依賴管理與建構。
 
